@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const DeleteButton = styled.button`
-  background: #f2a34c;
+  background: linear-gradient(90deg, #f4b05d, #f19639);
   color: black;
   font-weight: 900;
   width: 135px;
