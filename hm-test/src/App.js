@@ -1,12 +1,9 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import axios from 'axios';
-import debounce from 'lodash/debounce';
-import logo from './logo.svg';
+// import debounce from 'lodash/debounce';
 import './App.css';
-import Button from './common/Button';
-import Search from './components/Search';
-import AutoComplete from './components/Search';
+import { device } from './styles/Device';
 
 const theme = {
   red: '#FF0000',
@@ -31,9 +28,24 @@ const FavoriteList = styled.li`
   justify-content: space-between;
   align-items: center;
   text-transform: capitalize;
-  width: 800px;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
+  @media ${device.laptop} {
+    width: 800px;
+    max-width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: capitalize;
+  }
+`;
+const StyledH1 = styled.h1`
   font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
 `;
+
 const StyledH2 = styled.h2`
   font-family: Futura, 'Trebuchet MS', Arial, sans-serif;
 `;
@@ -85,23 +97,71 @@ const DeleteButton = styled.button`
     overflow: hidden;
   }
 `;
+const AddButton = styled.button`
+  background: linear-gradient(90deg, #00d4ff, #2075c8);
+  color: black;
+  font-weight: 900;
+  width: 135px;
+  height: 68px;
+  border: 1px solid #928574;
+  border-radius: 0;
+  font-size: 1rem;
+  display: inline-block;
+  transition: all 0.5s;
+  text-align: left;
+  vertical-align: middle;
+  position: relative;
+  &[disabled] {
+    opacity: 0.5;
+  }
+  &::after {
+    content: '\\00D7';
+    text-align: center;
+    height: 55px;
+    width: 55px;
+    background-color: white;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 48px;
+    text-align: center;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    font-size: 40px;
+    font-weight: 500;
+    overflow: hidden;
+  }
+`;
+
+const Page = styled.div`
+  background-color: white;
+  height: 100vh;
+  width: 100%;
+  margin: 0 auto;
+
+  @media ${device.laptop} {
+    width: 100%;
+    max-width: 800px;
+  }
+`;
 function App() {
   const [list, setList] = useState([]);
   const [data, setData] = useState({ hits: [] });
   const [query, setQuery] = useState('');
 
-  function removeItem(id) {
-    console.log(id);
+  function removeFavorite(id) {
+    // console.log(id);
     const newList = list.filter(item => item.objectID !== id);
-    console.log(newList);
+    // console.log(newList);
     setList(newList);
   }
-  function addItem(id) {
+  function addFavorite(id) {
     const dateAdded = new Date(Date.now()).toLocaleString('sv-SE');
     const newList = data.hits.filter(item => item.objectID === id);
     const newObject = newList[0];
     newObject.dateAdded = dateAdded;
-    console.log(newObject);
+    // console.log(newObject);
     setList(list => [...list, newObject]);
   }
   useEffect(() => {
@@ -109,30 +169,20 @@ function App() {
       setData({ hits: [] });
     }
     if (query.length < 3) return;
-    const fetchData = async () => {
+    const getDataFromAPI = async () => {
       // console.log('loading...', query);
       const result = await axios(
         `http://hn.algolia.com/api/v1/search?query=${query}`
       );
       setData(result.data);
     };
-    fetchData();
+    getDataFromAPI();
   }, [query]);
 
   return (
     <ThemeProvider theme={theme}>
-      <div
-        className='App'
-        style={{
-          backgroundColor: 'white',
-          height: '100vh',
-          width: '100%',
-          margin: '0 auto'
-        }}
-      >
-        <h1>This is the awesome test page</h1>
-        <p>Look, a delete button, so great:</p>
-        <Button />
+      <Page className='App'>
+        <StyledH1>This is the awesome test page</StyledH1>
         <div
           style={{
             display: 'flex',
@@ -147,11 +197,13 @@ function App() {
             value={query}
             onChange={event => setQuery(event.target.value)}
           />
-          <ul>
+          <ul style={{ padding: 0 }}>
             {data.hits.map(item => (
               <FavoriteList key={item.objectID} id={item.objectID}>
                 <a href={item.url}>{item.title}</a>
-                <button onClick={() => addItem(item.objectID)}>Add</button>
+                <AddButton onClick={() => addFavorite(item.objectID)}>
+                  Add
+                </AddButton>
               </FavoriteList>
             ))}
           </ul>
@@ -166,14 +218,14 @@ function App() {
           <StyledH2>
             These are my favorite articles, added by date, soo exciting!
           </StyledH2>
-          <ul id='favorites'>
+          <ul id='favorites' style={{ padding: 0 }}>
             {list.map(item => (
               <FavoriteList key={item.objectID}>
                 <a href={item.url}>{item.title}</a>
                 <span>Added on: {item.dateAdded}</span>
                 <DeleteButton
                   type='button'
-                  onClick={() => removeItem(item.objectID)}
+                  onClick={() => removeFavorite(item.objectID)}
                 >
                   Delete
                 </DeleteButton>
@@ -181,7 +233,7 @@ function App() {
             ))}
           </ul>
         </div>
-      </div>
+      </Page>
     </ThemeProvider>
   );
 }
