@@ -57,6 +57,7 @@ const StyledInput = styled.input`
   box-sizing: border-box;
   letter-spacing: 1px;
   color: black;
+  margin: 0 20px;
   &::focus {
     outline: none;
   }
@@ -149,11 +150,11 @@ function App() {
   const [list, setList] = useState([]);
   const [data, setData] = useState({ hits: [] });
   const [query, setQuery] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [singular, setSingular] = useState(false);
 
   function removeFavorite(id) {
-    // console.log(id);
     const newList = list.filter(item => item.objectID !== id);
-    // console.log(newList);
     setList(newList);
   }
   function addFavorite(id) {
@@ -161,13 +162,24 @@ function App() {
     const newList = data.hits.filter(item => item.objectID === id);
     const newObject = newList[0];
     newObject.dateAdded = dateAdded;
-    console.log(newObject.objectID);
+
     const duplicateExists = list.filter(
       item => item.objectID === newObject.objectID
     );
-    console.log(duplicateExists);
+
     if (duplicateExists.length === 0) {
       setList(list => [...list, newObject]);
+      setSingular(true);
+      setVisible(true);
+      setTimeout(() => {
+        setVisible(false);
+      }, 1200);
+    } else {
+      setSingular(false);
+      setVisible(true);
+      setTimeout(() => {
+        setVisible(false);
+      }, 1200);
     }
   }
   useEffect(() => {
@@ -197,12 +209,21 @@ function App() {
           }}
         >
           <StyledH2>Add your favorite article, h4xxor</StyledH2>
+
           <StyledInput
             placeholder='Search for something'
             type='text'
             value={query}
             onChange={event => setQuery(event.target.value)}
           />
+          <div style={{ height: '20px', margin: '5px' }}>
+            {visible === true && (
+              <span>
+                {singular ? `Added to favorite!` : `Favorite already added...`}
+              </span>
+            )}
+          </div>
+
           <ul style={{ padding: 0 }}>
             {data.hits.map(item => (
               <FavoriteList key={item.objectID} id={item.objectID}>
