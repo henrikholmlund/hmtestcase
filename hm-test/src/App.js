@@ -115,7 +115,7 @@ const AddButton = styled.button`
     opacity: 0.5;
   }
   &::after {
-    content: '\\00D7';
+    content: '\\2713';
     text-align: center;
     height: 55px;
     width: 55px;
@@ -123,7 +123,7 @@ const AddButton = styled.button`
     border-radius: 50%;
     display: inline-block;
     vertical-align: middle;
-    line-height: 48px;
+    line-height: 52px;
     text-align: center;
     position: absolute;
     right: 5px;
@@ -161,8 +161,14 @@ function App() {
     const newList = data.hits.filter(item => item.objectID === id);
     const newObject = newList[0];
     newObject.dateAdded = dateAdded;
-    // console.log(newObject);
-    setList(list => [...list, newObject]);
+    console.log(newObject.objectID);
+    const duplicateExists = list.filter(
+      item => item.objectID === newObject.objectID
+    );
+    console.log(duplicateExists);
+    if (duplicateExists.length === 0) {
+      setList(list => [...list, newObject]);
+    }
   }
   useEffect(() => {
     if (query.length === 0) {
@@ -215,9 +221,12 @@ function App() {
             flexDirection: 'column'
           }}
         >
-          <StyledH2>
-            These are my favorite articles, added by date, soo exciting!
-          </StyledH2>
+          {list.length > 0 && (
+            <StyledH2>
+              I currently have {list.length} favorites, soo exciting!
+            </StyledH2>
+          )}
+
           <ul id='favorites' style={{ padding: 0 }}>
             {list.map(item => (
               <FavoriteList key={item.objectID}>
